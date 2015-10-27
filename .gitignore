@@ -1,0 +1,6 @@
+# Excluding raw data files, which can be found at http://www.prontocycleshare.com/datachallenge
+*.zip
+csv_src/
+
+# Excluding p5.js libraries, which can be found at http://p5js.org/
+pronto-viz/libraries/
