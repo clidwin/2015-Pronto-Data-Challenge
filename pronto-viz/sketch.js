@@ -3,11 +3,11 @@
 // Data Tables
 var stationTable, tripDataTable;
 
-// Coordinates for the largest latitude and smallest longitude.
-var topLeft;
+// Coordinates for the largest latitude and longitude.
+var topRight;
 
-// Coordinates for the smallest latitude and largest longitude.
-var bottomRight;
+// Coordinates for the smallest latitude and longitude.
+var bottomLeft;
 
 //TODO(clidwin): Make dimensions full-screen
 var printWidth = 600;
@@ -29,6 +29,7 @@ function preload() {
 function setup() {
   // Environment Settings
   colorMode(HSB, 360, 100, 100, 100);
+  angleMode(DEGREES);
   
   // Initial Canvas Settings
   createCanvas(printWidth, printHeight);
@@ -41,12 +42,33 @@ function setup() {
 /**
  * Content to be executed multiple times/drawn on the screen.
  * This function executes continuously after setup has completed.
- * TODO(clidwin): Reduce the amount of calls made in draw.
  */
 function draw() {
-  var xDivisor = calcScaleFactor(bottomRight.x, topLeft.x, printWidth);
-  var yDivisor = calcScaleFactor(bottomRight.y, topLeft.y, printHeight);
+  // Rotates the canvas drawing area to match the orientation of a map.
+  translate(printWidth, printHeight);
+  rotate(180);
   
+  // Draw the static.
+  drawAllTrips();
+  drawStations();
+  
+  // Do not iterate.
+  noLoop();
+}
+
+function drawStations() {
+  // Skip Row 0 because it contains the header text
+  for (var i=1; i < stationTable.getRowCount(); i++) {
+    var x = mapLongValue(stationTable.getNum(i, "long"));
+    var y = mapLatValue(stationTable.getNum(i, "lat"));
+    
+    strokeWeight(6);
+    stroke(0);
+    point(x, y);
+  }
+}
+
+function drawAllTrips() {
   // Skip Row 0 because it contains the header text
   for (var i=1; i < tripDataTable.getRowCount(); i++) {
     // Get the trip stationIds
@@ -58,55 +80,45 @@ function draw() {
     
     var fromRow = stationTable.matchRow(fromId, "terminal");
     var toRow = stationTable.matchRow(toId, "terminal");
-    if (toRow === null) {
-      // The end terminal was "pronto shop", location unknown
-      toRow = fromRow;
-    } else if (fromRow === null) {
-      // The start terminal was "pronto shop", location unknown
-      fromRow = toRow;
+    if (toRow === null || fromRow === null) {
+      // The terminal was "pronto shop", location unknown, so we won't map it
+      continue;
     }
     
     // Get the latitudes from the trip stationIds
-    var fromX = fromRow.get("lat");
-    var toX = toRow.get("lat");
+    var fromLat = mapLatValue(fromRow.get("lat"));
+    var toLat = mapLatValue(toRow.get("lat"));
     
     // Get the longitudes from the trip stationIds
-    var fromY = fromRow.get("long");
-    var toY = toRow.get("long");
-    
-    // Calculate Canvas Coordinates
-    var fromPoint = createVector(
-      abs(fromX - topLeft.x)*xDivisor,
-      abs(fromY - bottomRight.y)*yDivisor,
-      0
-    );
-    var toPoint = createVector(
-      abs(toX - topLeft.x)*xDivisor,
-      abs(toY - bottomRight.y)*yDivisor,
-      0
-    );
+    var fromLong = mapLongValue(fromRow.get("long"));
+    var toLong = mapLongValue(toRow.get("long"));
     
     // Draw Points and Paths
-    stroke(0);
-    line(fromPoint.x, fromPoint.y, toPoint.x, toPoint.y);
-    point(printWidth - fromPoint.x, fromPoint.y);
-    point(printWidth - toPoint.x, 600-toPoint.y);
+    stroke(100, 54, 87, 25); // Pronto green
+    strokeWeight(2);
+    line(fromLong, fromLat, toLong, toLat);
+    strokeWeight(4);
+    point(fromLong, fromLat);
+    point(toLong, toLat);
   }
 }
 
 /**
- * Creates a multiplier to scale data points to the canvas size.
+ * Converts a GPS latitude number into a canvas x-dimension.
  * 
- * @param minDimension The minimum GPS representation to be used
- * @param maxDimension The maximum GPS representation to be used
- * @param pixelDimension The maximum number of pixels to be used
- * 
- * @returns a float representation of the relationship 
- *    between GPS and pixel coordinates
+ * @param value The GPS coordinate to be converted.
  */
-function calcScaleFactor(minDimension, maxDimension, pixelDimension) {
-  var scaleFactor = abs(maxDimension - minDimension);
-  return pixelDimension/scaleFactor;
+function mapLatValue(value) {
+  return map(value, bottomLeft.y, topRight.y, 0, printHeight);
+}
+
+/**
+ * Converts a GPS longitude number into a canvas y-dimension.
+ * 
+ * @param value The GPS coordinate to be converted.
+ */
+function mapLongValue(value) {
+  return map(value, bottomLeft.x, topRight.x, 0, printWidth);
 }
 
 /**
@@ -117,41 +129,38 @@ function calcScaleFactor(minDimension, maxDimension, pixelDimension) {
  */
 function calculateBoundaries() {
   // Set initial corners to the first data point in the table.
-  bottomRight = new p5.Vector(
-    stationTable.getNum(1, "lat"),
+  bottomLeft = new p5.Vector(
     stationTable.getNum(1, "long"), 
+    stationTable.getNum(1, "lat"),
     0 /* z coordinate will not be used */
   );
-  
-  topLeft = new p5.Vector(
-    stationTable.getNum(1, "lat"),
-    stationTable.getNum(1, "long"), 
-    0 /* z coordinate will not be used */
-  );
+  topRight = bottomLeft.copy();
   
   // Skip Row 0 because it contains the header text
   // and Row 1 because it was used above.
   for (var i=2; i < stationTable.getRowCount(); i++) {
-    // Handle Latitude
-    var latitude = stationTable.get(i, "lat");
-    if (latitude < bottomRight.x) {
-      bottomRight.set(latitude, bottomRight.y, 0);
-    } else if (latitude > topLeft.x) {
-      topLeft.set(latitude, topLeft.y, 0);
+    // Handle Longitude (x piece of coordinate)
+    var longitude = stationTable.get(i, "long");
+    if (longitude < bottomLeft.x) {
+      bottomLeft.set(longitude, bottomLeft.y, 0);
+    } else if (longitude > topRight.x) {
+      topRight.set(longitude, topRight.y, 0);
     }
     
-    // Handle Longitude
-    var longitude = stationTable.get(i, "long");
-    if (longitude < bottomRight.y) {
-      bottomRight.set(bottomRight.x, longitude, 0);
-    } else if (longitude > topLeft.y) {
-      topLeft.set(topLeft.x, longitude, 0);
+    // Handle Latitude (y piece of coordinate)
+    var latitude = stationTable.get(i, "lat");
+    if (latitude < bottomLeft.y) {
+      bottomLeft.set(bottomLeft.x, latitude, 0);
+    } else if (latitude > topRight.y) {
+      topRight.set(topRight.x, latitude, 0);
     }
   }
   
   // Apply border to data points
   //TODO(clidwin): Add border so none of the data points are off the canvas.
   var border = 0.0001; // This puts a "border" of about 1 street around the data points
-  //topLeft.add(0.0001, -0.0001, 0);
-  //bottomRight.add(-0.0001, 0.0001, 0);
+  //topRight.add(0.0001, -0.0001, 0);
+  //bottomLeft.add(-0.0001, 0.0001, 0);
+  //print(bottomLeft);
+  //print(topRight);
 }
