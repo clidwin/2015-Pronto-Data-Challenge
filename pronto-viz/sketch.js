@@ -33,7 +33,7 @@ function setup() {
   
   // Initial Canvas Settings
   createCanvas(printWidth, printHeight);
-  background(50, 0, 85, 100);
+  //background(50, 0, 85, 100);
   
   // Set Bounding Variables
   calculateBoundaries();
@@ -49,8 +49,8 @@ function draw() {
   rotate(180);
   
   // Draw the static.
-  drawAllTrips();
-  drawStations();
+  //drawAllTrips();
+  //drawStations();
   
   // Do not iterate.
   noLoop();

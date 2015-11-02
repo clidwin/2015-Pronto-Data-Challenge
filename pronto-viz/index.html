@@ -3,15 +3,29 @@
   <head>
     <meta charset="UTF-8">
     <title>Pronto Data Challenge 2015 | Christina Lidwin</title>
+    
+    <!-- Base p5.js Libraries -->
     <script src="libraries/p5.js" type="text/javascript"></script>
-
     <script src="libraries/p5.dom.js" type="text/javascript"></script>
     <script src="libraries/p5.sound.js" type="text/javascript"></script>
+    
+    <!-- Google Maps Javascript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI&callback=initMap&signed_in=true" async defer>
+    </script>
 
+    <!-- Custom Javascript Classes -->
+    <script src="map.js" type="text/javascript"></script>
     <script src="sketch.js" type="text/javascript"></script>
 
-    <style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style>
+    <!-- TODO(clidwin): Put styling in an external class -->
+    <style> 
+      html, body {height: 100%; width: 100%; } 
+      body {padding: 0; margin: 0; position: relative;} 
+      canvas {position: absolute; top: 0; vertical-align: top;} 
+      #map-underlay {position: absolute; top: 0; vertical-align: top; height: 100%; width: 100%;} 
+    </style>
   </head>
   <body>
+    <div id="map-underlay"></div>
   </body>
 </html>
