@@ -15,17 +15,23 @@
 
     <!-- Custom Javascript Classes -->
     <script src="map.js" type="text/javascript"></script>
-    <script src="sketch.js" type="text/javascript"></script>
+    <!-- <script src="sketch.js" type="text/javascript"></script> -->
 
-    <!-- TODO(clidwin): Put styling in an external class -->
-    <style> 
-      html, body {height: 100%; width: 100%; } 
-      body {padding: 0; margin: 0; position: relative;} 
-      canvas {position: absolute; top: 0; vertical-align: top;} 
-      #map-underlay {position: absolute; top: 0; vertical-align: top; height: 100%; width: 100%;} 
-    </style>
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
+    <!-- TODO(clidwin): Responsive web navigation -->
+    <header>
+        <h1 id="site-title" class="text">Cycle Stats</h1>
+        <div id="navigation">
+            <a href="" class="text nav-item">Credits</a>
+            <a href="" class="text nav-item">Usage</a>
+            <a href="" class="text nav-item">About</a>
+        </div>
+    </header>
     <div id="map-underlay"></div>
+    <footer>
+        <p class="text">Created for the <a href="//www.prontocycleshare.com/datachallenge" class="hyperlink" target="_blank">Pronto Data Challenge</a> &copy; Christina Lidwin 2015</p>
+    </footer>
   </body>
 </html>

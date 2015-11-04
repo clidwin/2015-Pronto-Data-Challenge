@@ -1,0 +1,94 @@
+@import url(reset.css);
+@import url(http://fonts.googleapis.com/css?family=Roboto:300,400,500,700);
+
+/* Basic Tags */
+html, body {
+    font-family: 'Roboto';
+    font-size: 1em;
+    font-weight: 300;
+    
+    height: 100%; 
+    width: 100%;
+} 
+
+body {
+    margin: 0;
+    padding: 0;
+} 
+
+/* HTML5 Tags */
+footer {
+    background-color: #003b49;
+    border-top: 4px solid #777777;
+    font-size: 0.8em;
+    line-height: 36px;
+    height: 36px;
+    text-align: center;
+    width: 100%;
+}
+
+header {
+    background-color: #003b49;
+    border-bottom: 8px solid #777777;
+    height: 64px; 
+    position: relative;
+    width: 100%;
+}
+
+h1 {
+    font-size: 2em;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+b {
+    font-weight: 700;
+}
+
+a {
+    color: #cccccc;
+    text-decoration: none;
+}
+
+a:hover, .hyperlink {
+    color: #8edd65;
+}
+
+.nav-item {
+    display: inline-block;
+    float: right;
+    font-weight: 500;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100px;
+}
+
+#site-title {
+    display: inline-block;
+    height: 60px;
+    left: 0;
+    line-height: 60px;
+    padding-left: 25px;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+.text {
+    color: #cccccc;
+}
+
+#navigation {
+    display: inline-block;
+    float: right;
+    position: absolute;
+    right: 0;
+    width: 400px;
+}
+
+#map-underlay {
+    height: calc(100% - 112px); 
+    vertical-align: top;
+    width: 100%;
+} 
