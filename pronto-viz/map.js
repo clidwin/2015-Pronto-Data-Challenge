@@ -70,6 +70,19 @@ function initMap() {
  * generates the content to be displayed when each station is clicked.
  */
 function initializeStations() {
+  // Gather and draw all stations.
+  stationData = new google.maps.FusionTablesLayer({
+    query: {
+      select: 'lat',
+      from: '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo' // TODO(clidwin): Scrub this information before launch
+    },
+    styles: [{
+      markerOptions: {
+        iconName: 'measle_brown' //'cycling' option for animations
+      }
+    }]
+  });
+
   // Define the click action for each station
   google.maps.event.addListener(stationData, 'click', function(e) {
     // Set the content of the info window
@@ -125,7 +138,7 @@ function updateStationInfoCard(stationTableCell) {
   });
   map.setStreetView(panorama);
     
-  //TODO(clidwin): Get information from the trip data
+   //TODO(clidwin): Get information from the trip data
 }
 
 function updateDirections(row) {
