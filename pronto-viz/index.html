@@ -29,7 +29,43 @@
             <a href="" class="text nav-item">About</a>
         </div>
     </header>
-    <div id="map-underlay"></div>
+    <div id="content">
+        <div id="map-underlay"></div>
+        <div id="info-card" class="card">
+            <h1 id="info-title">Station Details</h1>
+            <p id="station-card-name">Click a Station for More</p>
+            <div id="station-card-streetview"></div>
+            
+            <h2 class="info-section-title">Basic Info</h2>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">First Online:</p>
+                <p id="station-card-online" class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Terminal ID:</p>
+                <p id="station-card-id" class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Total Bike Docks:</p>
+                <p id="station-card-docks" class="station-card-datum-content"></p>
+            </div>
+            <div class="horizontal-rule"></div>
+            
+            <h2 class="info-section-title">2014 Data</h2>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Total Visits:</p>
+                <p id="station-card-visit-total" class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Arrivals:</p>
+                <p id="station-card-visit-arrivals" class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Departures:</p>
+                <p id="station-card-visit-departures" class="station-card-datum-content"></p>
+            </div>
+        </div>
+    </div>
     <footer>
         <p class="text">Created for the <a href="//www.prontocycleshare.com/datachallenge" class="hyperlink" target="_blank">Pronto Data Challenge</a> &copy; Christina Lidwin 2015</p>
     </footer>

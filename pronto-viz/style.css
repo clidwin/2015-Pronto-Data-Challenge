@@ -1,9 +1,13 @@
 @import url(reset.css);
+@import url(http://fonts.googleapis.com/css?family=Raleway:300,400,500,700);
 @import url(http://fonts.googleapis.com/css?family=Roboto:300,400,500,700);
 
 /* Basic Tags */
 html, body {
-    font-family: 'Roboto';
+    background-color: #dddddd;
+    color: #003b49;
+    
+    font-family: 'Roboto', sans-serif;
     font-size: 1em;
     font-weight: 300;
     
@@ -20,6 +24,10 @@ body {
 footer {
     background-color: #003b49;
     border-top: 4px solid #777777;
+    box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    -webkit-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    
     font-size: 0.8em;
     line-height: 36px;
     height: 36px;
@@ -30,15 +38,30 @@ footer {
 header {
     background-color: #003b49;
     border-bottom: 8px solid #777777;
+    box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    -webkit-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    
     height: 64px; 
     position: relative;
     width: 100%;
 }
 
 h1 {
+    font-family: 'Raleway', sans-serif;
     font-size: 2em;
     font-weight: 700;
     vertical-align: middle;
+}
+
+h2 {
+    font-family: 'Raleway', sans-serif;
+}
+
+.info-section-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin: 12px 0;
 }
 
 b {
@@ -52,6 +75,7 @@ a {
 
 a:hover, .hyperlink {
     color: #8edd65;
+    cursor: pointer;
 }
 
 .nav-item {
@@ -67,6 +91,8 @@ a:hover, .hyperlink {
 
 #site-title {
     display: inline-block;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 800;
     height: 60px;
     left: 0;
     line-height: 60px;
@@ -79,6 +105,94 @@ a:hover, .hyperlink {
     color: #cccccc;
 }
 
+.card {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    
+    background-color: #ffffff;
+    display: inline-block;
+    padding: 12px;
+}
+
+.horizontal-rule {
+    border-bottom: 1px solid #cccccc;
+    height: 1px;
+    margin: 8px 0;
+    width: 100%;
+}
+
+.marker-content-datum {
+    padding: 2px 0;
+}
+
+.marker-link {
+    color: #003b49;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.station-card-datum {
+    margin-left: 12px;
+    padding: 4px 0;
+}
+
+.marker-content, .station-card-datum-content {
+    display: inline-block;
+    font-weight: 300;
+}
+
+.marker-label, .station-card-datum-label {
+    display: inline-block;
+    font-weight: 500;
+}
+
+.marker-label {
+    margin-right: 4px;
+}
+
+/* Ids (Listed Alphabetically) */
+#content {
+    position: relative;
+    height: calc(100% - 112px); 
+    width: 100%;
+}
+
+#info-card {
+  box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+  -webkit-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+  -moz-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
+    
+  height: calc(100% - 56px);
+  width: 20%;
+    max-width: 700px;
+    min-width: 300px;
+}
+
+#info-title {
+    margin-top: 8px;
+    text-align: center;
+}
+
+#map-underlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    
+    height: 100%; 
+    vertical-align: top;
+    width: 100%;
+}
+
+#marker-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    line-height: 1.4em;
+    margin-bottom: 4px;
+    max-width: 250px;
+}
+
 #navigation {
     display: inline-block;
     float: right;
@@ -87,8 +201,16 @@ a:hover, .hyperlink {
     width: 400px;
 }
 
-#map-underlay {
-    height: calc(100% - 112px); 
-    vertical-align: top;
+#station-card-streetview {
+    background-color: #cccccc;
+    height: 250px;
+    margin-bottom: 18px;
+    margin-top: 12px;
     width: 100%;
-} 
+}
+
+#station-card-name {
+    line-height: 1.2em;
+    margin-top: 4px;
+    text-align: center;
+}
