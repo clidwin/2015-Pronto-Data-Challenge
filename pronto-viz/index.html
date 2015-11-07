@@ -22,16 +22,20 @@
   <body>
     <!-- TODO(clidwin): Responsive web navigation -->
     <header>
-        <h1 id="site-title" class="text">Cycle Stats</h1>
-        <div id="navigation">
-            <a href="" class="text nav-item">Credits</a>
-            <a href="" class="text nav-item">Usage</a>
-            <a href="" class="text nav-item">About</a>
+        <div id="header-content-wrapper">
+            <h1 id="site-title" class="text"><a href="">Cycle Stats</a></h1>
+            <div id="navigation">
+                <a href="" class="text nav-item">Credits</a>
+                    <!-- credits includes typography, Google Maps API, Pronto Data Set -->
+                <a href="" class="text nav-item">Usage</a>
+                <a href="" class="text nav-item">About</a>
+            </div>
         </div>
     </header>
     <div id="content">
         <div id="map-underlay"></div>
         <div id="info-card" class="card">
+            <!-- TODO(clidwin): Add close button -->
             <h1 id="info-title">Station Details</h1>
             <p id="station-card-name">Click a Station for More</p>
             <div id="station-card-streetview"></div>
@@ -51,7 +55,7 @@
             </div>
             <div class="horizontal-rule"></div>
             
-            <h2 class="info-section-title">2014 Data</h2>
+            <h2 class="info-section-title">Visit Information (2014)</h2>
             <div class="station-card-datum">
                 <p class="station-card-datum-label">Total Visits:</p>
                 <p id="station-card-visit-total" class="station-card-datum-content"></p>
@@ -64,6 +68,10 @@
                 <p class="station-card-datum-label">Departures:</p>
                 <p id="station-card-visit-departures" class="station-card-datum-content"></p>
             </div>
+            
+            <div class="horizontal-rule"></div>
+            
+            <h2 class="info-section-title">Usage Graph (2014)</h2>
         </div>
     </div>
     <footer>

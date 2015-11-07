@@ -1,15 +1,15 @@
 @import url(reset.css);
-@import url(http://fonts.googleapis.com/css?family=Raleway:300,400,500,700);
-@import url(http://fonts.googleapis.com/css?family=Roboto:300,400,500,700);
+@import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
+@import url(http://fonts.googleapis.com/css?family=Lato:300, 400);
 
 /* Basic Tags */
 html, body {
     background-color: #dddddd;
     color: #003b49;
     
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Lato', sans-serif;
     font-size: 1em;
-    font-weight: 300;
+    font-weight: 400;
     
     height: 100%; 
     width: 100%;
@@ -43,22 +43,23 @@ header {
     -moz-box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.3);
     
     height: 64px; 
-    position: relative;
     width: 100%;
 }
 
 h1 {
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 2em;
     font-weight: 700;
     vertical-align: middle;
 }
 
 h2 {
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
 }
 
 .info-section-title {
+    font-family: 'Montserrat', sans-serif;
     font-size: 1.2em;
     font-weight: 700;
     margin: 12px 0;
@@ -81,24 +82,13 @@ a:hover, .hyperlink {
 .nav-item {
     display: inline-block;
     float: right;
-    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
     height: 60px;
     line-height: 60px;
     text-align: center;
     text-transform: uppercase;
     width: 100px;
-}
-
-#site-title {
-    display: inline-block;
-    font-family: 'Raleway', sans-serif;
-    font-weight: 800;
-    height: 60px;
-    left: 0;
-    line-height: 60px;
-    padding-left: 25px;
-    position: absolute;
-    text-transform: uppercase;
 }
 
 .text {
@@ -128,6 +118,8 @@ a:hover, .hyperlink {
 
 .marker-link {
     color: #003b49;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
     text-align: center;
     text-transform: uppercase;
     width: 100%;
@@ -140,12 +132,14 @@ a:hover, .hyperlink {
 
 .marker-content, .station-card-datum-content {
     display: inline-block;
+    font-family: 'Lato', sans-serif;
     font-weight: 300;
 }
 
 .marker-label, .station-card-datum-label {
     display: inline-block;
-    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
 }
 
 .marker-label {
@@ -157,6 +151,14 @@ a:hover, .hyperlink {
     position: relative;
     height: calc(100% - 112px); 
     width: 100%;
+}
+
+#header-content-wrapper {
+    height: 64px;
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+      max-width: 1200px;
 }
 
 #info-card {
@@ -186,6 +188,7 @@ a:hover, .hyperlink {
 }
 
 #marker-title {
+    font-family: 'Montserrat', sans-serif;
     font-size: 1.2em;
     font-weight: 700;
     line-height: 1.4em;
@@ -201,6 +204,19 @@ a:hover, .hyperlink {
     width: 400px;
 }
 
+#site-title {
+    display: inline-block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    height: 60px;
+    left: 0;
+    line-height: 60px;
+    padding-left: 25px;
+    position: absolute;
+    text-transform: uppercase;
+    width: auto;
+}
+
 #station-card-streetview {
     background-color: #cccccc;
     height: 250px;
@@ -213,4 +229,44 @@ a:hover, .hyperlink {
     line-height: 1.2em;
     margin-top: 4px;
     text-align: center;
+}
+
+@media (max-width: 600px) {
+  header {
+    height: auto;
+      min-height: 64px;
+  }
+
+  #header-content-wrapper {
+    height: auto;
+    position: relative;
+    overflow: auto;
+  }
+
+  #navigation {
+    display: block;
+    height: auto;
+    float: none;
+    overflow: auto;
+    position: relative;
+    margin: 0 auto;
+    text-align: center;
+    width: 400px;
+  }
+
+  #site-title {
+    clear: both;
+    display: block;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+    text-align: center;
+  }
+    
+  .nav-item {
+    float: none;
+    height: 1.4em;
+    line-height: 1.4em;
+    padding-bottom: 16px;
+  }
 }

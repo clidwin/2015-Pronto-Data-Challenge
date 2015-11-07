@@ -1,9 +1,13 @@
 var map;
 var stationData;
 var lastValidCenter;
+
+// Coordinate components for directions between two stations
 var originLat, originLong, destLat, destLong;
 
 var allowedBounds;
+
+var customMapTypeId = 'pronto_style';
 
 /**
  *
@@ -33,6 +37,18 @@ function initMap() {
   var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
   var directionsService = new google.maps.DirectionsService;
     
+  setStyling();
+  setBoundaries();
+    
+  initializeStations();
+    
+  directionsDisplay.setMap(map);
+  //calculateAndDisplayRoute(directionsService, directionsDisplay);
+    
+  //TODO(clidwin): Listen to onWindowSizeChange and adjust map so the footer is still in the view
+}
+
+function setStyling() {
   var customMapType = new google.maps.StyledMapType([
       {
         stylers: [
@@ -53,16 +69,8 @@ function initMap() {
     ], {
       name: 'Pronto Style'
   });
-  var customMapTypeId = 'pronto_style';
   map.mapTypes.set(customMapTypeId, customMapType);
   map.setMapTypeId(customMapTypeId);
-    
-  setBoundaries();
-    
-  initializeStations();
-    
-  directionsDisplay.setMap(map);
-  //calculateAndDisplayRoute(directionsService, directionsDisplay);
 }
 
 /**
