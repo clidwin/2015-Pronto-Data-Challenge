@@ -1,7 +1,9 @@
 var map;
 var stationData;
-
+var lastValidCenter;
 var originLat, originLong, destLat, destLong;
+
+var allowedBounds;
 
 /**
  *
@@ -14,8 +16,9 @@ function initMap() {
   };
     
   map = new google.maps.Map(document.getElementById('map-underlay'), {
-    zoom: 14,
-    center: {lat: 47.6097, lng: -122.3331},  // Seattle.
+    zoom: 13,
+    minZoom: 13,
+    center: {lat: 47.634831, lng: -122.326634},  // Seattle station EL-03
     mapTypeControlOptions: {
       mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
     },
@@ -30,11 +33,6 @@ function initMap() {
   var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
   var directionsService = new google.maps.DirectionsService;
     
-  // TODO(clidwin): Apply these boundaries to the map
-  var bounds = new google.maps.LatLngBounds(
-    new google.maps.LatLng(47.6095, -122.3330),
-    new google.maps.LatLng(47.6097, -122.3332)
-  );
   var customMapType = new google.maps.StyledMapType([
       {
         stylers: [
@@ -59,10 +57,38 @@ function initMap() {
   map.mapTypes.set(customMapTypeId, customMapType);
   map.setMapTypeId(customMapTypeId);
     
+  setBoundaries();
+    
   initializeStations();
     
   directionsDisplay.setMap(map);
   //calculateAndDisplayRoute(directionsService, directionsDisplay);
+}
+
+/**
+ * Creates limits for how far away from the center of the station data
+ * a user can pan.
+ */
+function setBoundaries() {
+  allowedBounds = new google.maps.LatLngBounds(
+    new google.maps.LatLng(47.598488, -122.35523), // Southwest boundary
+    new google.maps.LatLng(47.666145, -122.284119)  // Northeast boundary
+  );
+
+  lastValidCenter = map.getCenter();
+    
+  // Method adapted from https://stackoverflow.com/questions/3125065/
+  google.maps.event.addListener(map, 'center_changed', function() {
+    if (allowedBounds.contains(map.getCenter())) {
+        // Update the new center value to the current position
+        lastValidCenter = map.getCenter();
+        return; 
+    }
+
+    // Reset the center to be within the panning boundaries
+    // TODO(clidwin): Show panning restriction message to users
+    map.panTo(lastValidCenter);
+   });
 }
 
 /**
