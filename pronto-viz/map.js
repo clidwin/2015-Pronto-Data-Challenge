@@ -1,18 +1,28 @@
+var customMapTypeId = 'pronto_style';
+
+var allowedBounds;
+var lastValidCenter;
 var map;
 var stationData;
-var lastValidCenter;
+
+var apiKey = 'AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI';
+var tripDataKey = '14RtXJ3vHUKxGiAom_mz8W4MpzJu1p5ga0_H_a82G';
+var stationDataKey = '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo';
 
 // Coordinate components for directions between two stations
 var originLat, originLong, destLat, destLong;
 
-var allowedBounds;
-
-var customMapTypeId = 'pronto_style';
+google.setOnLoadCallback(initMap);
+google.load('visualization', '1', {
+    'packages':['corechart', 'table', 'geomap']
+});
 
 /**
  *
  */
 function initMap() {
+  //google.load("visualization", "1");
+    
   var rendererOptions = {
       map: map,
       preserveViewport: true,
@@ -48,6 +58,9 @@ function initMap() {
   //TODO(clidwin): Listen to onWindowSizeChange and adjust map so the footer is still in the view
 }
 
+/**
+ * Applies visual derivations to the map (color, visibility, etc).
+ */
 function setStyling() {
   var customMapType = new google.maps.StyledMapType([
       {
@@ -94,8 +107,9 @@ function setBoundaries() {
     }
 
     // Reset the center to be within the panning boundaries
-    // TODO(clidwin): Show panning restriction message to users
     map.panTo(lastValidCenter);
+      
+    // TODO(clidwin): Show panning restriction message to users
    });
 }
 
@@ -108,7 +122,7 @@ function initializeStations() {
   stationData = new google.maps.FusionTablesLayer({
     query: {
       select: 'lat',
-      from: '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo' // TODO(clidwin): Scrub this information before launch
+      from: stationDataKey // TODO(clidwin): Scrub this information before launch
     },
     styles: [{
       markerOptions: {
@@ -116,6 +130,7 @@ function initializeStations() {
       }
     }]
   });
+  console.log('Stations: ' + stationData.rows);
 
   // Define the click action for each station
   google.maps.event.addListener(stationData, 'click', function(e) {
@@ -132,18 +147,25 @@ function initializeStations() {
     e.infoWindowHtml += '<div class="horizontal-rule"></div>';
     //TODO(clidwin): Set an onClick listener for this link.
     e.infoWindowHtml += '<a class="marker-link">Pick Destination</a>';
-
+      
     updateStationInfoCard(e);
       
-    //TODO(clidwin): Clear content when the "X" is clicked
+    //TODO(clidwin): Clear content when the "X" is clicked ('closeclick' event)
     //updateDirections(e);
   });
+    
+  /*google.maps.event.addListener(e.infoWindow, 'closeclick', function() {  
+    alert("I'm Closed");  
+  }); */
     
   stationData.setMap(map);
 }
 
 /**
- *
+ * Retrieves and applies content to display in the station info card.
+ * 
+ * @param stationTableCell A pointer a table row with
+ *      the basic station information to be shown.
  */
 function updateStationInfoCard(stationTableCell) {
   // Set Text Elements
@@ -172,9 +194,49 @@ function updateStationInfoCard(stationTableCell) {
   });
   map.setStreetView(panorama);
     
-   //TODO(clidwin): Get information from the trip data
+  // Show trip data affiliated with the station
+  queryAndDisplayCount(
+      'from_station_id', 
+      stationTableCell.row['terminal'].value, 
+      'station-card-visit-departures'
+  );
+  queryAndDisplayCount(
+      'to_station_id', 
+      stationTableCell.row['terminal'].value, 
+      'station-card-visit-arrivals'
+  );
 }
 
+/**
+ * Retrieves the number of entries in a column matching a particular string, and show the number
+ * of matching columns on the station card.
+ *
+ * @param columnName The name of the column to search for matches
+ * @param likeValue The string each column entry is compared to for similarities
+ * @param domElementId The element used to display the number of entries found
+ */
+function queryAndDisplayCount(columnName, likeValue, domElementId) {
+  var queryText = 'SELECT COUNT(' + columnName + ') AS total FROM ' + tripDataKey + ' where ' 
+        + columnName + ' LIKE \'' + likeValue + '\''; 
+    
+  var query = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
+  query.setQuery(queryText);
+  query.send(function(response) {
+    // If the query does not execute, log the error;
+    if (response.isError()) {
+      console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+      document.getElementById(domElementId).textContent = 'Unknown'; 
+      return;
+    }
+    // Successful queries should show the resulting count in the UI
+    var numRows = response.getDataTable().getFormattedValue(0, 0);
+    document.getElementById(domElementId).textContent = numRows; 
+  });
+}
+
+/**
+ *
+ */
 function updateDirections(row) {
   if (originLat === null) {
     originLat = row.row['lat'].value;
