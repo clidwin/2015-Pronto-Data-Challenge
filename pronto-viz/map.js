@@ -20,9 +20,7 @@ google.load('visualization', '1', {
 /**
  *
  */
-function initMap() {
-  //google.load("visualization", "1");
-    
+function initMap() { 
   var rendererOptions = {
       map: map,
       preserveViewport: true,
@@ -130,7 +128,6 @@ function initializeStations() {
       }
     }]
   });
-  console.log('Stations: ' + stationData.rows);
 
   // Define the click action for each station
   google.maps.event.addListener(stationData, 'click', function(e) {
@@ -187,6 +184,7 @@ function updateStationInfoCard(stationTableCell) {
         addressControl: false,
         position: location,
         pov: {
+          // TODO(clidwin): Manually customize this for each station by adding details to the database
           heading: 34,
           pitch: 10,
           zoom: 1
@@ -205,6 +203,42 @@ function updateStationInfoCard(stationTableCell) {
       stationTableCell.row['terminal'].value, 
       'station-card-visit-arrivals'
   );
+  queryAndDisplayDuration(
+      stationTableCell.row['terminal'].value, 
+      'station-card-visit-duration'
+  );
+}
+
+/**
+ * Calculates and shows the average duration of a bike trip originating from this station.
+ *
+ * @param stationId The destination location
+ * @param domElementId The element used to average duration
+ */
+function queryAndDisplayDuration(stationId, domElementId) {
+  // Establish query text
+  var departureQueryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' + tripDataKey + ' where ' 
+        + 'from_station_id' + ' LIKE \'' + stationId + '\'';
+  // TODO(clidwin): Duplicate queryAndDisplay for arrival times
+  var arrivalQueryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' + tripDataKey + ' where ' 
+        + 'to_station_id' + ' LIKE \'' + stationId + '\'';
+    
+  // Execute query for departure time duration totals
+  var depQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
+  depQuery.setQuery(departureQueryText);
+  depQuery.send(function(depResponse) {
+    // If the query does not execute, log the error;
+    if (depResponse.isError()) {
+      console.log('Error in query: ' + depResponse.getMessage() + ' ' + depResponse.getDetailedMessage());
+      document.getElementById(domElementId).textContent = 'Unknown'; 
+      return;
+    }
+    // Successful query; extract queried information
+    var depTotal = depResponse.getDataTable().getValue(0, 0);
+    var depCount = depResponse.getDataTable().getValue(0, 1);
+    var average = Math.round((depTotal/depCount)/60);
+    document.getElementById(domElementId).textContent = average + ' minutes'; 
+  });
 }
 
 /**
