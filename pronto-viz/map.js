@@ -12,8 +12,26 @@ var stationDataKey = '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo';
 // Coordinate components for directions between two stations
 var originLat, originLong, destLat, destLong;
 
+var COLUMN_ID = 0;
+var COLUMN_NAME = 1;
+var COLUMN_TERMINAL = 2;
+var COLUMN_LAT = 3;
+var COLUMN_LNG = 4;
+var COLUMN_DOCK_COUNT=5;
+var COLUMN_ONLINE=6;
+
+var openedInfoWindow = null;
+var selectedMarker = null;
+
 google.setOnLoadCallback(initMap);
 google.load('visualization', '1', { 'packages':['corechart', 'table', 'geomap'] });
+
+// From https://stackoverflow.com/questions/1643320/
+var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+var DAY_OF_WEEK_NAMES = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.'];
 
 /**
  *
@@ -110,77 +128,130 @@ function setBoundaries() {
 }
 
 /**
+ * Generates an info window (and associated card) based on the database information associated
+ * with the coordinates of the point on the map clicked.
+ *
+ * @param marker The clicked marker object
+ * @param event The click event
+ */
+function createInfoWindow(marker, event) {
+  // Construct Query
+  var query = 'SELECT * FROM ' + stationDataKey + ' where lat LIKE \'' + event.latLng.lat() + '\'';;
+  query = encodeURIComponent(query);
+
+  // Execute Query
+  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
+  gvizQuery.send(function(response) {
+    // Log errors if they occur
+    if (response.isError()) {
+        logQueryError(response);
+        return;
+    }
+      
+    // Close the opened info window if another one is already opened.
+    if (openedInfoWindow != null) {
+        openedInfoWindow.close();
+    }
+      
+    // Create the content to display in the info window
+    var infoWindowContent = '<p id="marker-title">' 
+        + response.getDataTable().getValue(0, COLUMN_NAME) + '</p>';
+    infoWindowContent += '<div class="marker-content-datum">';
+    infoWindowContent += '<p class="marker-label">GPS: </p>' + '<p class="marker-content">';
+    infoWindowContent += '(' + event.latLng.lat() + ', ' + event.latLng.lng() + ')' + "</p>";
+    infoWindowContent += '</div>';
+    infoWindowContent += '<div class="marker-content-datum">';
+    infoWindowContent += '<p class="marker-label">Bike Docks: </p>';
+    infoWindowContent += '<p class="marker-content">' 
+        + response.getDataTable().getValue(0, COLUMN_DOCK_COUNT) + "</p>";
+    infoWindowContent += '</div>'
+    infoWindowContent += '<div class="horizontal-rule"></div>';
+    //TODO(clidwin): Set an onClick listener for this link.
+    infoWindowContent += '<a class="marker-link" onclick="getDirectionsClicked(' 
+        + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Pick Destination</a>';
+      
+    // Construct the info window object
+    var infoWindow = new google.maps.InfoWindow();
+    infoWindow.setPosition(event.latLng);
+    infoWindow.setContent(infoWindowContent);
+    google.maps.event.addListener(infoWindow, 'closeclick', function() {
+        //TODO(clidwin): Clear the info-card data
+        openedInfoWindow = null;
+    });
+      
+    infoWindow.open(map);
+    openedInfoWindow = infoWindow;
+      
+    updateStationInfoCard(response.getDataTable(), event);
+  });
+}
+
+/**
  * Queries the database for the different Pronto bike stations and
  * generates the content to be displayed when each station is clicked.
  */
 function initializeStations() {
-  // Gather and draw all stations.
-  stationData = new google.maps.FusionTablesLayer({
-    query: {
-      select: 'lat',
-      from: stationDataKey // TODO(clidwin): Scrub this information before launch
-    },
-    styles: [{
-      markerOptions: {
-        iconName: 'measle_brown' //'cycling' option for animations
-      }
-    }]
-  });
+  var query = 'SELECT * FROM ' + stationDataKey;
+  query = encodeURIComponent(query);
 
-  // Define the click action for each station
-  google.maps.event.addListener(stationData, 'click', function(e) {
-    // Set the content of the info window
-    e.infoWindowHtml = '<p id="marker-title">' + e.row['name'].value + '</p>';
-    e.infoWindowHtml += '<div class="marker-content-datum">';
-    e.infoWindowHtml += '<p class="marker-label">GPS: </p>' + '<p class="marker-content">';
-    e.infoWindowHtml += '(' + e.row['lat'].value + ', ' + e.row['long'].value + ')' + "</p>";
-    e.infoWindowHtml += '</div>';
-    e.infoWindowHtml += '<div class="marker-content-datum">';
-    e.infoWindowHtml += '<p class="marker-label">Bike Docks: </p>';
-    e.infoWindowHtml += '<p class="marker-content">' + e.row['dockcount'].value + "</p>";
-    e.infoWindowHtml += '</div>'
-    e.infoWindowHtml += '<div class="horizontal-rule"></div>';
-    //TODO(clidwin): Set an onClick listener for this link.
-    e.infoWindowHtml += '<a class="marker-link">Pick Destination</a>';
+  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
+  gvizQuery.send(function(response) {
       
-    updateStationInfoCard(e);
+  var numRows = response.getDataTable().getNumberOfRows();
+    // For each row in the table, create a marker
+    for (var i = 0; i < numRows; i++) {
+      // Get the location from the row
+      var lat = parseFloat(response.getDataTable().getValue(i, COLUMN_LAT));
+      var lng = parseFloat(response.getDataTable().getValue(i, COLUMN_LNG));
+      var markerLatLong = new google.maps.LatLng(
+          parseFloat(response.getDataTable().getValue(i, COLUMN_LAT)),
+          parseFloat(response.getDataTable().getValue(i, COLUMN_LNG))
+      );
+        
+      // Create (and show) the associated marker object
+      var marker = new google.maps.Marker({
+        map: map,
+        position: markerLatLong,
+        //TODO(clidwin): custom markers for availability (green (available to come/go), 
+        //blue (available to depart from), yellow (available to arrive at), black/grey (full/offline))
+        icon: 'https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png'
+      });
       
-    //TODO(clidwin): Clear content when the "X" is clicked ('closeclick' event)
-    //updateDirections(e);
+      // Create attached infoWindow
+      google.maps.event.addListener(marker, 'click', function(event) {
+            createInfoWindow(marker, event);
+        });
+    }
   });
-    
-  /*google.maps.event.addListener(e.infoWindow, 'closeclick', function() {  
-    alert("I'm Closed");  
-  }); */
-    
-  stationData.setMap(map);
 }
 
 /**
  * Retrieves and applies content to display in the station info card.
  * 
- * @param stationTableCell A pointer a table row with
+ * @param stationTable A pointer a table row with
  *      the basic station information to be shown.
+ * @param event The click event (with location info) triggering a (re)population
+ *      of the info card
  */
-function updateStationInfoCard(stationTableCell) {
+function updateStationInfoCard(stationTable, event) {
+  var onlineDate = new Date(stationTable.getValue(0, COLUMN_ONLINE));
+    
   // Set Text Elements
   document.getElementById('station-card-name').textContent = 
-      stationTableCell.row['name'].value;
+      stationTable.getValue(0, COLUMN_NAME);
   document.getElementById('station-card-online').textContent = 
-      stationTableCell.row['online'].value;
+      DAY_OF_WEEK_NAMES[onlineDate.getDay()] + ', ' + MONTH_NAMES[onlineDate.getMonth()] + ' ' 
+      + onlineDate.getDate() + ', ' + onlineDate.getFullYear();
   document.getElementById('station-card-id').textContent = 
-      stationTableCell.row['terminal'].value;
+      stationTable.getValue(0, COLUMN_TERMINAL);
   document.getElementById('station-card-docks').textContent = 
-      stationTableCell.row['dockcount'].value;
+      stationTable.getValue(0, COLUMN_DOCK_COUNT);
     
   // Create Street View Panorama
-  var location = new google.maps.LatLng
-      (parseFloat(stationTableCell.row['lat'].value), 
-       parseFloat(stationTableCell.row['long'].value));
   var panorama = new google.maps.StreetViewPanorama(
       document.getElementById('station-card-streetview'), {
         addressControl: false,
-        position: location,
+        position: event.latLng,
         pov: {
           // TODO(clidwin): Manually customize this for each station by adding details to the database
           heading: 34,
@@ -193,21 +264,21 @@ function updateStationInfoCard(stationTableCell) {
   // Show trip data affiliated with the station
   queryAndDisplayCount(
       'from_station_id', 
-      stationTableCell.row['terminal'].value, 
+      stationTable.getValue(0, COLUMN_TERMINAL), 
       'station-card-visit-departures'
   );
   queryAndDisplayCount(
       'to_station_id', 
-      stationTableCell.row['terminal'].value, 
+      stationTable.getValue(0, COLUMN_TERMINAL), 
       'station-card-visit-arrivals'
   );
   queryAndDisplayDuration(
-      stationTableCell.row['terminal'].value, 
+      stationTable.getValue(0, COLUMN_TERMINAL), 
       'station-card-visit-outgoing',
       false
   );
   queryAndDisplayDuration(
-      stationTableCell.row['terminal'].value, 
+      stationTable.getValue(0, COLUMN_TERMINAL), 
       'station-card-visit-incoming',
       true
   );
@@ -217,7 +288,8 @@ function updateStationInfoCard(stationTableCell) {
     containerId: 'station-card-graph',
     dataSourceUrl: 'http://www.google.com/fusiontables/gvizdata?tq=',
     query: 'SELECT usertype, COUNT(tripduration) ' + 'FROM  ' + tripDataKey + ' WHERE ' 
-      + 'from_station_id' + ' LIKE \'' + stationTableCell.row['terminal'].value + '\'' + ' GROUP BY usertype',
+      + 'from_station_id' + ' LIKE \'' + stationTable.getValue(0, COLUMN_TERMINAL) 
+      + '\'' + ' GROUP BY usertype',
     chartType: 'ColumnChart',
     options: {
       colors: ['#00708c'],
@@ -264,8 +336,7 @@ function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
   query.send(function(response) {
     // If the query does not execute, log the error
     if (response.isError()) {
-      console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
-      document.getElementById(domElementId).textContent = 'Unknown'; 
+      logQueryError(response);
       return;
     }
     // Successful query; extract queried information
@@ -274,6 +345,15 @@ function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
     var average = Math.round((total/count)/60);
     document.getElementById(domElementId).textContent = average + ' minutes'; 
   });
+}
+
+/**
+ * Outputs to the console the error received in attempting a database query.
+ * 
+ * @param response The error to display
+ */
+function logQueryError(response) {
+    console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
 }
 
 /**
