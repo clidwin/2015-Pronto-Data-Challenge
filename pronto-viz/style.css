@@ -58,13 +58,6 @@ h2 {
     font-weight: 400;
 }
 
-.info-section-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.2em;
-    font-weight: 700;
-    margin: 12px 0;
-}
-
 b {
     font-weight: 700;
 }
@@ -77,6 +70,13 @@ a {
 a:hover, .hyperlink {
     color: #8edd65;
     cursor: pointer;
+}
+
+.info-section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2em;
+    font-weight: 700;
+    margin: 12px 0 6px 0;
 }
 
 .nav-item {

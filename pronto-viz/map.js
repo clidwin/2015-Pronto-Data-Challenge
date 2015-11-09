@@ -13,9 +13,7 @@ var stationDataKey = '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo';
 var originLat, originLong, destLat, destLong;
 
 google.setOnLoadCallback(initMap);
-google.load('visualization', '1', {
-    'packages':['corechart', 'table', 'geomap']
-});
+google.load('visualization', '1', { 'packages':['corechart', 'table', 'geomap'] });
 
 /**
  *
@@ -205,8 +203,40 @@ function updateStationInfoCard(stationTableCell) {
   );
   queryAndDisplayDuration(
       stationTableCell.row['terminal'].value, 
-      'station-card-visit-duration'
+      'station-card-visit-outgoing',
+      false
   );
+  queryAndDisplayDuration(
+      stationTableCell.row['terminal'].value, 
+      'station-card-visit-incoming',
+      true
+  );
+    
+  // Generate and display showing groupings
+  google.visualization.drawChart({
+    containerId: 'station-card-graph',
+    dataSourceUrl: 'http://www.google.com/fusiontables/gvizdata?tq=',
+    query: 'SELECT usertype, COUNT(tripduration) ' + 'FROM  ' + tripDataKey + ' WHERE ' 
+      + 'from_station_id' + ' LIKE \'' + stationTableCell.row['terminal'].value + '\'' + ' GROUP BY usertype',
+    chartType: 'ColumnChart',
+    options: {
+      colors: ['#00708c'],
+      hAxes: {
+        0: {
+          title:'Type of Pass'
+        }
+      },
+      legend: { position: 'none' },
+      tooltip: 'none', //TODO(clidwin): Customize tooltip
+      vAxes: {
+        0: {
+          title:'Number of Rides'
+        }
+      },
+      viewWindowMode: 'maximized',
+      width: '100%'
+    }
+  });
 }
 
 /**
@@ -214,29 +244,34 @@ function updateStationInfoCard(stationTableCell) {
  *
  * @param stationId The destination location
  * @param domElementId The element used to average duration
+ * @param isArrivalQuery Boolean determining which duration query is being requested
  */
-function queryAndDisplayDuration(stationId, domElementId) {
+function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
   // Establish query text
-  var departureQueryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' + tripDataKey + ' where ' 
-        + 'from_station_id' + ' LIKE \'' + stationId + '\'';
-  // TODO(clidwin): Duplicate queryAndDisplay for arrival times
-  var arrivalQueryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' + tripDataKey + ' where ' 
-        + 'to_station_id' + ' LIKE \'' + stationId + '\'';
+  var queryText;
+  if (isArrivalQuery) {
+      queryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' 
+        + tripDataKey + ' where ' + 'to_station_id' + ' LIKE \'' + stationId + '\'';
+  } else {
+      queryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' 
+        + tripDataKey + ' where ' + 'from_station_id' + ' LIKE \'' + stationId + '\'';
+  }
+  
     
   // Execute query for departure time duration totals
-  var depQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
-  depQuery.setQuery(departureQueryText);
-  depQuery.send(function(depResponse) {
-    // If the query does not execute, log the error;
-    if (depResponse.isError()) {
-      console.log('Error in query: ' + depResponse.getMessage() + ' ' + depResponse.getDetailedMessage());
+  var query = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
+  query.setQuery(queryText);
+  query.send(function(response) {
+    // If the query does not execute, log the error
+    if (response.isError()) {
+      console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
       document.getElementById(domElementId).textContent = 'Unknown'; 
       return;
     }
     // Successful query; extract queried information
-    var depTotal = depResponse.getDataTable().getValue(0, 0);
-    var depCount = depResponse.getDataTable().getValue(0, 1);
-    var average = Math.round((depTotal/depCount)/60);
+    var total = response.getDataTable().getValue(0, 0);
+    var count = response.getDataTable().getValue(0, 1);
+    var average = Math.round((total/count)/60);
     document.getElementById(domElementId).textContent = average + ' minutes'; 
   });
 }
