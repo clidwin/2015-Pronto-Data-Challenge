@@ -5,6 +5,8 @@ var lastValidCenter;
 var map;
 var stationData;
 
+var originLatLng;
+
 var apiKey = 'AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI';
 var tripDataKey = '14RtXJ3vHUKxGiAom_mz8W4MpzJu1p5ga0_H_a82G';
 var stationDataKey = '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo';
@@ -128,13 +130,60 @@ function setBoundaries() {
 }
 
 /**
+ * Queries the database for the different Pronto bike stations and
+ * generates the content to be displayed when each station is clicked.
+ */
+function initializeStations() {
+  var query = 'SELECT * FROM ' + stationDataKey;
+  query = encodeURIComponent(query);
+
+  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
+  gvizQuery.send(function(response) {
+      
+  var numRows = response.getDataTable().getNumberOfRows();
+    // For each row in the table, create a marker
+    for (var i = 0; i < numRows; i++) {
+      // Get the location from the row
+      var lat = parseFloat(response.getDataTable().getValue(i, COLUMN_LAT));
+      var lng = parseFloat(response.getDataTable().getValue(i, COLUMN_LNG));
+      var markerLatLong = new google.maps.LatLng(
+          parseFloat(response.getDataTable().getValue(i, COLUMN_LAT)),
+          parseFloat(response.getDataTable().getValue(i, COLUMN_LNG))
+      );
+        
+      // Create (and show) the associated marker object
+      var marker = new google.maps.Marker({
+        map: map,
+        position: markerLatLong,
+        //TODO(clidwin): custom markers for availability (green (available to come/go), 
+        //blue (available to depart from), yellow (available to arrive at), black/grey (full/offline))
+        icon: 'assets/measle_brown.png'
+      });
+      
+      // Create attached infoWindow
+      google.maps.event.addListener(marker, 'click', function(event) {
+            if (selectedMarker != null) {
+                // Create an info window and populate the directions info card
+                // TODO(clidwin): should info window on hover when doing directions
+                //createInfoWindow(event, true);
+                
+            } else {
+                // Create an info window and populate the station info card
+                createInfoWindow(event, false);
+            }
+        });
+    }
+  });
+}
+
+/**
  * Generates an info window (and associated card) based on the database information associated
  * with the coordinates of the point on the map clicked.
  *
- * @param marker The clicked marker object
  * @param event The click event
+ * @param forDirections True if the info window is showing the destination for directions, else false
  */
-function createInfoWindow(marker, event) {
+function createInfoWindow(event, forDirections) {
   // Construct Query
   var query = 'SELECT * FROM ' + stationDataKey + ' where lat LIKE \'' + event.latLng.lat() + '\'';;
   query = encodeURIComponent(query);
@@ -166,9 +215,16 @@ function createInfoWindow(marker, event) {
         + response.getDataTable().getValue(0, COLUMN_DOCK_COUNT) + "</p>";
     infoWindowContent += '</div>'
     infoWindowContent += '<div class="horizontal-rule"></div>';
-    //TODO(clidwin): Set an onClick listener for this link.
-    infoWindowContent += '<a class="marker-link" onclick="getDirectionsClicked(' 
-        + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Pick Destination</a>';
+
+    if (forDirections) {
+        //TODO(clidwin): Set link to show information for this station (no more directions)
+        infoWindowContent += '<a class="marker-link" onclick="showStationInsteadOfDirections(' 
+            + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Show Station Details</a>';
+    } else {
+        infoWindowContent += '<a class="marker-link" onclick="initializeDirections(' 
+            + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Pick Destination</a>';
+        updateStationInfoCard(response.getDataTable(), event);
+    }
       
     // Construct the info window object
     var infoWindow = new google.maps.InfoWindow();
@@ -182,47 +238,41 @@ function createInfoWindow(marker, event) {
     infoWindow.open(map);
     openedInfoWindow = infoWindow;
       
-    updateStationInfoCard(response.getDataTable(), event);
+    
   });
 }
 
 /**
- * Queries the database for the different Pronto bike stations and
- * generates the content to be displayed when each station is clicked.
+ * TODO(clidwin): Describe
+ *
+ * @param lat The latitude piece of the selected marker's coordinate
+ * @param lng The longitude piece of the selected marker's coordinate
  */
-function initializeStations() {
-  var query = 'SELECT * FROM ' + stationDataKey;
-  query = encodeURIComponent(query);
+function showStationInsteadOfDirections(lat, lng) {
+    //TODO(clidwin): Implement
+    alert('Station request acknowledged');
+}
 
-  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
-  gvizQuery.send(function(response) {
-      
-  var numRows = response.getDataTable().getNumberOfRows();
-    // For each row in the table, create a marker
-    for (var i = 0; i < numRows; i++) {
-      // Get the location from the row
-      var lat = parseFloat(response.getDataTable().getValue(i, COLUMN_LAT));
-      var lng = parseFloat(response.getDataTable().getValue(i, COLUMN_LNG));
-      var markerLatLong = new google.maps.LatLng(
-          parseFloat(response.getDataTable().getValue(i, COLUMN_LAT)),
-          parseFloat(response.getDataTable().getValue(i, COLUMN_LNG))
-      );
-        
-      // Create (and show) the associated marker object
-      var marker = new google.maps.Marker({
+/**
+ * Sets variables and indicators noting an intention to find directions from
+ * the marker selected at the provided latitude and longitude.
+ *
+ * @param lat The latitude piece of the selected marker's coordinate
+ * @param lng The longitude piece of the selected marker's coordinate
+ */
+function initializeDirections(lat, lng) {    
+    // Close the opened info window and highlight its associated marker
+    openedInfoWindow.close();
+    originLatLng = new google.maps.LatLng(parseFloat(lat),parseFloat(lng));
+    selectedMarker = new google.maps.Marker({
         map: map,
-        position: markerLatLong,
-        //TODO(clidwin): custom markers for availability (green (available to come/go), 
-        //blue (available to depart from), yellow (available to arrive at), black/grey (full/offline))
-        icon: 'https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png'
-      });
-      
-      // Create attached infoWindow
-      google.maps.event.addListener(marker, 'click', function(event) {
-            createInfoWindow(marker, event);
-        });
-    }
-  });
+        position: originLatLng,
+        icon: 'assets/measle_turquoise.png'
+    });
+    google.maps.event.addListener(selectedMarker, 'click', function(event) {
+        //TODO(clidwin): Have a toast pop up indicating origin != destination
+        console.log('origin clicked');
+    });
 }
 
 /**
