@@ -28,7 +28,8 @@
             <h1 id="site-title" class="text"><a href="">Cycle Stats</a></h1>
             <div id="navigation">
                 <a href="" class="text nav-item">Credits</a>
-                    <!-- credits includes typography, Google Maps API, Pronto Data Set -->
+                    <!-- credits includes typography, Google Maps API, 
+                        Pronto Data Set -->
                 <a href="" class="text nav-item">Usage</a>
                 <a href="" class="text nav-item">About</a>
             </div>
@@ -37,7 +38,6 @@
     <div id="content">
         <div id="map-underlay"></div>
         <div id="info-card" class="card">
-            <!-- TODO(clidwin): Add close button -->
             <h1 id="info-title">Station Details</h1>
             <p id="station-card-name">Click a Pronto Station</p>
             <div id="station-card-streetview"></div>
@@ -45,7 +45,8 @@
             <h2 class="info-section-title">Basic Info</h2>
             <div class="station-card-datum">
                 <p class="station-card-datum-label">First Online:</p>
-                <p id="station-card-online" class="station-card-datum-content"></p>
+                <p id="station-card-online" 
+                   class="station-card-datum-content"></p>
             </div>
             <div class="station-card-datum">
                 <p class="station-card-datum-label">Terminal ID:</p>
@@ -53,35 +54,86 @@
             </div>
             <div class="station-card-datum">
                 <p class="station-card-datum-label">Total Bike Docks:</p>
-                <p id="station-card-docks" class="station-card-datum-content"></p>
+                <p id="station-card-docks" 
+                   class="station-card-datum-content"></p>
+            </div>
+            <div class="horizontal-rule"></div>
+            
+            <h2 class="info-section-title">Visit Details (2014)</h2>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Average Outgoing Visit:</p>
+                <p id="station-card-visit-outgoing" 
+                   class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Average Incoming Visit:</p>
+                <p id="station-card-visit-incoming" 
+                   class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Total Arrivals:</p>
+                <p id="station-card-visit-arrivals" 
+                   class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Total Departures:</p>
+                <p id="station-card-visit-departures" 
+                   class="station-card-datum-content"></p>
+            </div>
+            <div class="horizontal-rule"></div>
+            
+            <h2 class="info-section-title">Visits by Pass Type (2014)</h2>
+            <div id="station-card-graph"></div>
+        </div>
+        <div id="trip-card" class="card">
+            <h1 id="trip-heading">Ride Details</h1>
+            <!-- TODO(clidwin): Turn the instructions into a link
+                to go back to station card views -->
+            <p id="trip-instructions">Click a Pronto Station Destination</p>
+            <div id="trip-elevation-graph"></div>
+            
+            <h2 class="info-section-title">Basic Info</h2>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Origin:</p>
+                <p id="trip-origin" class="station-card-datum-content"></p>
+            </div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">Destination:</p>
+                <p id="trip-destination" class="station-card-datum-content"></p>
             </div>
             <div class="horizontal-rule"></div>
             
             <h2 class="info-section-title">Trip Details (2014)</h2>
             <div class="station-card-datum">
-                <p class="station-card-datum-label">Average Outgoing Trip:</p>
-                <p id="station-card-visit-outgoing" class="station-card-datum-content"></p>
+                <p class="station-card-datum-label">Estimated Travel Time:</p>
+                <p id="travel-time-estimated" 
+                   class="station-card-datum-content"></p>
             </div>
             <div class="station-card-datum">
-                <p class="station-card-datum-label">Average Incoming Trip:</p>
-                <p id="station-card-visit-incoming" class="station-card-datum-content"></p>
+                <p class="station-card-datum-label">Average Travel Time:</p>
+                <p id="travel-time-avg" class="station-card-datum-content"></p>
             </div>
             <div class="station-card-datum">
-                <p class="station-card-datum-label">Total Arrivals:</p>
-                <p id="station-card-visit-arrivals" class="station-card-datum-content"></p>
+                <p class="station-card-datum-label">Total Trips:</p>
+                <p id="total-trips" class="station-card-datum-content"></p>
             </div>
             <div class="station-card-datum">
-                <p class="station-card-datum-label">Total Departures:</p>
-                <p id="station-card-visit-departures" class="station-card-datum-content"></p>
+                <p class="station-card-datum-label">Trips by Annual Passes:</p>
+                <p id="trips-annual" class="station-card-datum-content"></p>
             </div>
-            <div class="horizontal-rule"></div>
-            
-            <h2 class="info-section-title">Trips by Pass Type (2014)</h2>
-            <div id="station-card-graph"></div>
+            <div class="station-card-datum">
+                <p class="station-card-datum-label">
+                    Trips by Short-Term Passes:
+                </p>
+                <p id="trips-short-term" class="station-card-datum-content"></p>
+            </div>
         </div>
     </div>
     <footer>
-        <p class="text">Created for the <a href="//www.prontocycleshare.com/datachallenge" class="hyperlink" target="_blank">Pronto Data Challenge</a>  &copy;  Christina Lidwin 2015</p>
+        <p class="text">
+            Created for the <a href="//www.prontocycleshare.com/datachallenge" 
+                class="hyperlink" target="_blank">Pronto Data Challenge</a>  
+            &copy;  Christina Lidwin 2015</p>
     </footer>
   </body>
 </html>

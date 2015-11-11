@@ -6,6 +6,7 @@ var map;
 var stationData;
 
 var originLatLng;
+
 var destInfoWindow;
 
 var apiKey = 'AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI';
@@ -24,7 +25,9 @@ var COLUMN_DOCK_COUNT=5;
 var COLUMN_ONLINE=6;
 
 var openedInfoWindow = null;
-var selectedMarker = null;
+var selectedOriginMarker = null;
+//TODO(clidwin): Create a different-colored marker indicating the destination
+var selectedDestMarker = null;
 
 var directionsDisplay;
 
@@ -68,7 +71,8 @@ function initMap() {
     
   initializeStations();
     
-  //TODO(clidwin): Listen to onWindowSizeChange and adjust map so the footer is still in the view
+  //TODO(clidwin): Listen to onWindowSizeChange and 
+  //adjust map so the footer is still in the view
 }
 
 /**
@@ -153,17 +157,22 @@ function initializeStations() {
       var marker = new google.maps.Marker({
         map: map,
         position: markerLatLong,
-        //TODO(clidwin): custom markers for availability (green (available to come/go), 
-        //blue (available to depart from), yellow (available to arrive at), black/grey (full/offline))
+        //TODO(clidwin): custom markers for availability 
+        //(green (available to come/go), 
+        //blue (available to depart from), 
+        //yellow (available to arrive at), 
+        //black/grey (full/offline))
         icon: 'assets/measle_brown.png'
       });
       
       // Create marker click listener
       google.maps.event.addListener(marker, 'click', function(event) {
-            if (selectedMarker != null) {
+            if (selectedOriginMarker != null) {
                 showRoute(event.latLng);
+                updateTripCard(event.latLng);
                 // Create an info window and populate the directions info card
-                // TODO(clidwin): should info window on hover when doing directions
+                // TODO(clidwin): should info window on 
+                //hover when doing directions
                 //createInfoWindow(event, true);
                 
             } else {
@@ -171,31 +180,19 @@ function initializeStations() {
                 createInfoWindow(event, false);
             }
       });
-
-      // Create marker hover listener
-      google.maps.event.addListener(marker, 'mouseover', function(event) {
-        if (selectedMarker != null) {
-            createInfoWindow(event, true);
-        }
-      });
-
-      // Create marker un-hover listener
-      google.maps.event.addListener(marker, 'mouseout', function(event) {
-        if (selectedMarker != null) {
-            destInfoWindow.close();
-            destInfoWindow = null;
-        }
-      });
     }
   });
 }
 
 /**
- * Generates an info window (and associated card) based on the database information associated
- * with the coordinates of the point on the map clicked.
+ * Generates an info window (and associated card)
+ * based on the database information associated with the coordinates 
+ * of the point on the map clicked.
  *
  * @param event The click event
- * @param forDirections True if the info window is showing the destination for directions, else false
+ * @param forDirections 
+ *      True if the info window is showing the destination for directions,
+ *      else false
  */
 function createInfoWindow(event, forDirections) {
   // Construct Query
@@ -222,8 +219,10 @@ function createInfoWindow(event, forDirections) {
     var infoWindowContent = '<p id="marker-title">' 
         + response.getDataTable().getValue(0, COLUMN_NAME) + '</p>';
     infoWindowContent += '<div class="marker-content-datum">';
-    infoWindowContent += '<p class="marker-label">GPS: </p>' + '<p class="marker-content">';
-    infoWindowContent += '(' + event.latLng.lat() + ', ' + event.latLng.lng() + ')' + "</p>";
+    infoWindowContent += '<p class="marker-label">GPS: </p>' 
+        + '<p class="marker-content">';
+    infoWindowContent += '(' + event.latLng.lat() + ', ' 
+        + event.latLng.lng() + ')' + "</p>";
     infoWindowContent += '</div>';
     infoWindowContent += '<div class="marker-content-datum">';
     infoWindowContent += '<p class="marker-label">Bike Docks: </p>';
@@ -233,12 +232,17 @@ function createInfoWindow(event, forDirections) {
     infoWindowContent += '<div class="horizontal-rule"></div>';
 
     if (forDirections) {
-        //TODO(clidwin): Set link to show information for this station (no more directions)
-        infoWindowContent += '<a class="marker-link" onclick="showStationInsteadOfDirections(' 
-            + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Show Station Details</a>';
+        //TODO(clidwin): Set link to show information for this station 
+        //(no more directions)
+        infoWindowContent += 
+            '<a class="marker-link" onclick="showStationInsteadOfDirections(' 
+            + event.latLng.lat() + ', ' + event.latLng.lng() 
+            + ')">Show Station Details</a>';
     } else {
-        infoWindowContent += '<a class="marker-link" onclick="initializeDirections(' 
-            + event.latLng.lat() + ', ' + event.latLng.lng() + ')">Pick Destination</a>';
+        infoWindowContent += 
+            '<a class="marker-link" onclick="initializeDirections(' 
+            + event.latLng.lat() + ', ' + event.latLng.lng() 
+            + ')">Pick Destination</a>';
         updateStationInfoCard(response.getDataTable(), event);
     }
       
@@ -254,7 +258,7 @@ function createInfoWindow(event, forDirections) {
     infoWindow.open(map);
     openedInfoWindow = infoWindow;
     
-    if (selectedMarker != null) {
+    if (selectedOriginMarker != null) {
         destInfoWindow = infoWindow;
     }
   });
@@ -282,15 +286,56 @@ function initializeDirections(lat, lng) {
     // Close the opened info window and highlight its associated marker
     openedInfoWindow.close();
     originLatLng = new google.maps.LatLng(parseFloat(lat),parseFloat(lng));
-    selectedMarker = new google.maps.Marker({
+    selectedOriginMarker = new google.maps.Marker({
         map: map,
         position: originLatLng,
         icon: 'assets/measle_turquoise.png'
     });
-    google.maps.event.addListener(selectedMarker, 'click', function(event) {
+    google.maps.event.addListener(selectedOriginMarker, 'click', function(event) {
         //TODO(clidwin): Have a toast pop up indicating origin != destination
         console.log('origin clicked');
     });
+    
+    // Switch which card is displayed
+    document.getElementById('info-card').style.display = 'none';
+    document.getElementById('trip-card').style.display = 'block';
+    document.getElementById('trip-origin').textContent 
+        = document.getElementById('station-card-name').textContent;
+}
+
+/**
+ * TODO(clidwin): Describe Method
+ *
+ * @param destLatLng The position of the station destination (lat, long)
+ */
+function updateTripCard(destLatLng) {    
+  // Construct Destionation Query
+  var destQuery = 'SELECT * FROM ' + stationDataKey 
+        + ' where lat LIKE \'' + destLatLng.lat() + '\'';;
+  destQuery = encodeURIComponent(destQuery);
+
+  // Execute Query
+  var destinationTerminal;
+  var destGvizQuery = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=' + destQuery);
+  destGvizQuery.send(function(response) {
+    // Log errors if they occur
+    if (response.isError()) {
+        logQueryError(response);
+        return;
+    }
+      
+    document.getElementById('trip-destination').textContent = 
+        response.getDataTable().getValue(0,COLUMN_NAME);
+
+    var destinationTerminal = 
+        response.getDataTable().getValue(0,COLUMN_TERMINAL);
+    var originTerminal = document.getElementById('station-card-id').textContent;
+    
+    calculateTotalTrips(originTerminal, destinationTerminal);
+    queryAndDisplayTripsByPass(originTerminal, destinationTerminal, true);
+    queryAndDisplayTripsByPass(originTerminal, destinationTerminal, false);
+  });
 }
 
 /**
@@ -308,7 +353,8 @@ function updateStationInfoCard(stationTable, event) {
   document.getElementById('station-card-name').textContent = 
       stationTable.getValue(0, COLUMN_NAME);
   document.getElementById('station-card-online').textContent = 
-      DAY_OF_WEEK_NAMES[onlineDate.getDay()] + ', ' + MONTH_NAMES[onlineDate.getMonth()] + ' ' 
+      DAY_OF_WEEK_NAMES[onlineDate.getDay()] + ', ' 
+      + MONTH_NAMES[onlineDate.getMonth()] + ' ' 
       + onlineDate.getDate() + ', ' + onlineDate.getFullYear();
   document.getElementById('station-card-id').textContent = 
       stationTable.getValue(0, COLUMN_TERMINAL);
@@ -321,7 +367,8 @@ function updateStationInfoCard(stationTable, event) {
         addressControl: false,
         position: event.latLng,
         pov: {
-          // TODO(clidwin): Manually customize this for each station by adding details to the database
+          // TODO(clidwin): Manually customize this for each station 
+          // by adding details to the database
           heading: 34,
           pitch: 10,
           zoom: 1
@@ -355,8 +402,9 @@ function updateStationInfoCard(stationTable, event) {
   google.visualization.drawChart({
     containerId: 'station-card-graph',
     dataSourceUrl: 'http://www.google.com/fusiontables/gvizdata?tq=',
-    query: 'SELECT usertype, COUNT(tripduration) ' + 'FROM  ' + tripDataKey + ' WHERE ' 
-      + 'from_station_id' + ' LIKE \'' + stationTable.getValue(0, COLUMN_TERMINAL) 
+    query: 'SELECT usertype, COUNT(tripduration) ' + 'FROM  ' 
+      + tripDataKey + ' WHERE ' + 'from_station_id' 
+      + ' LIKE \'' + stationTable.getValue(0, COLUMN_TERMINAL) 
       + '\'' + ' GROUP BY usertype',
     chartType: 'ColumnChart',
     options: {
@@ -380,7 +428,81 @@ function updateStationInfoCard(stationTable, event) {
 }
 
 /**
- * Calculates and shows the average duration of a bike trip originating from this station.
+ * Retrieves from the database and calculates values relating to the total
+ * trips taken along a specific route and the amount of time an average trip
+ * takes on the route.
+ *
+ * @param originTerminal The id of the terminal where the trip begins
+ * @param destinationTerminal The id of the terminal where the trip ends
+ */
+function calculateTotalTrips(originTerminal, destinationTerminal) {
+  var avgQuery = 'SELECT COUNT(tripduration), SUM(tripduration) FROM ' 
+      + tripDataKey 
+      + ' WHERE from_station_id LIKE \'' + originTerminal + '\'';
+      + ' AND to_station_id LIKE \'' + destinationTerminal + '\'';
+  avgQuery = encodeURIComponent(avgQuery);
+  var avgGvizQuery = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=' + avgQuery);
+  avgGvizQuery.send(function(response) {
+    // Log errors if they occur
+    if (response.isError()) {
+        logQueryError(response);
+        return;
+    }
+    
+    var totalTrips = response.getDataTable().getValue(0,0);
+    var totalTripTime = response.getDataTable().getValue(0,1);
+    var averageTripTime = Math.round((totalTripTime/totalTrips)/60);
+      
+    document.getElementById('total-trips').textContent = totalTrips;
+    document.getElementById('travel-time-avg').textContent = 
+        averageTripTime + ' minutes';
+  });
+}
+
+/**
+ * Retrieves from the database and displays the number of trips for a specific
+ * pass type.
+ *
+ * @param originTerminal The id of the terminal where the trip begins
+ * @param destinationTerminal The id of the terminal where the trip ends
+ * @param isAnnualPass True for annual passes, false for short term passes
+ */
+function queryAndDisplayTripsByPass(
+    originTerminal, destinationTerminal, isAnnualPass) {
+  var passQuery = 'SELECT COUNT(usertype) FROM ' 
+      + tripDataKey 
+      + ' WHERE from_station_id LIKE \'' + originTerminal + '\'';
+      + ' AND to_station_id LIKE \'' + destinationTerminal + '\'';
+       
+  // Set method components dependent on the pass type
+  var elementId;
+  if (isAnnualPass) {
+      passQuery += ' AND usertype LIKE \'Annual Member\'';
+      elementId = 'trips-annual';
+  } else {
+      passQuery += ' AND usertype LIKE \'Short-Term Pass Holder\'';
+      elementId = 'trips-short-term';
+  }
+
+  passQuery = encodeURIComponent(passQuery);
+  var passGvizQuery = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=' + passQuery);
+  passGvizQuery.send(function(response) {
+    // Log errors if they occur
+    if (response.isError()) {
+        logQueryError(response);
+        return;
+    }
+    
+    document.getElementById(elementId).textContent = 
+        response.getDataTable().getValue(0,0);
+  });
+}
+
+/**
+ * Calculates and shows the average duration of a bike trip 
+ * originating from this station.
  *
  * @param stationId The destination location
  * @param domElementId The element used to average duration
@@ -391,12 +513,13 @@ function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
   var queryText;
   if (isArrivalQuery) {
       queryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' 
-        + tripDataKey + ' where ' + 'to_station_id' + ' LIKE \'' + stationId + '\'';
+        + tripDataKey + ' where ' + 'to_station_id' + ' LIKE \'' 
+          + stationId + '\'';
   } else {
       queryText = 'SELECT SUM(tripduration), COUNT(tripduration) FROM ' 
-        + tripDataKey + ' where ' + 'from_station_id' + ' LIKE \'' + stationId + '\'';
+        + tripDataKey + ' where ' + 'from_station_id' + ' LIKE \'' 
+          + stationId + '\'';
   }
-  
     
   // Execute query for departure time duration totals
   var query = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
@@ -421,27 +544,30 @@ function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
  * @param response The error to display
  */
 function logQueryError(response) {
-    console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    console.log('Error in query: ' + response.getMessage() + ' ' 
+                + response.getDetailedMessage());
 }
 
 /**
- * Retrieves the number of entries in a column matching a particular string, and show the number
- * of matching columns on the station card.
+ * Retrieves the number of entries in a column matching a particular string, 
+ * and show the number of matching columns on the station card.
  *
  * @param columnName The name of the column to search for matches
  * @param likeValue The string each column entry is compared to for similarities
  * @param domElementId The element used to display the number of entries found
  */
 function queryAndDisplayCount(columnName, likeValue, domElementId) {
-  var queryText = 'SELECT COUNT(' + columnName + ') AS total FROM ' + tripDataKey + ' where ' 
-        + columnName + ' LIKE \'' + likeValue + '\''; 
+  var queryText = 'SELECT COUNT(' + columnName + ') AS total FROM ' 
+        + tripDataKey + ' where ' + columnName + ' LIKE \'' + likeValue + '\''; 
     
-  var query = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=');
+  var query = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=');
   query.setQuery(queryText);
   query.send(function(response) {
     // If the query does not execute, log the error;
     if (response.isError()) {
-      console.log('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+      console.log('Error in query: ' + response.getMessage() + ' ' 
+                  + response.getDetailedMessage());
       document.getElementById(domElementId).textContent = 'Unknown'; 
       return;
     }
@@ -452,40 +578,8 @@ function queryAndDisplayCount(columnName, likeValue, domElementId) {
 }
 
 /**
- *
- */
-function updateDirections(row) {
-  if (originLat === null) {
-    originLat = row.row['lat'].value;
-    originLong = row.row['long'].value;
-    return;
-  } else if (destLat === null) {
-    destLat = row.row['lat'].value;
-    destLong = row.row['long'].value;
-
-    var directionsDisplay = new google.maps.DirectionsRenderer;
-    var directionsService = new google.maps.DirectionsService;
-    calculateAndDisplayRoute2(directionsService, directionsDisplay);
-  } else {
-    originLat = destLat;
-    originLong = destLong;
-    destLat = row.row['lat'].value;
-    destLong = row.row['long'].value;
-
-    var rendererOptions = {
-    map: map,
-    preserveViewport: true,
-    suppressMarkers : true
-  };
-    var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
-    var directionsService = new google.maps.DirectionsService;
-    //calculateAndDisplayRoute2(directionsService, directionsDisplay);
-  }
-}
-
-/**
  * Displays a route between two two stations.
- * https://stackoverflow.com/questions/6040965/
+ * Inspiration in https://stackoverflow.com/questions/6040965/
  * 
  * @param destLatLng The arrival station's latitude and longitude
  */
@@ -514,5 +608,6 @@ function showRoute(destLatLng) {
     } else {
       window.alert('Directions request failed due to ' + status);
     }
+    //TODO(clidwin): Show the estimated route time and draw elevation graph
   });
 }
