@@ -6,6 +6,7 @@ var map;
 var stationData;
 
 var originLatLng;
+var destInfoWindow;
 
 var apiKey = 'AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI';
 var tripDataKey = '14RtXJ3vHUKxGiAom_mz8W4MpzJu1p5ga0_H_a82G';
@@ -24,6 +25,8 @@ var COLUMN_ONLINE=6;
 
 var openedInfoWindow = null;
 var selectedMarker = null;
+
+var directionsDisplay;
 
 google.setOnLoadCallback(initMap);
 google.load('visualization', '1', { 'packages':['corechart', 'table', 'geomap'] });
@@ -60,16 +63,10 @@ function initMap() {
     }
   });
     
-  var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
-  var directionsService = new google.maps.DirectionsService;
-    
   setStyling();
   setBoundaries();
     
   initializeStations();
-    
-  directionsDisplay.setMap(map);
-  //calculateAndDisplayRoute(directionsService, directionsDisplay);
     
   //TODO(clidwin): Listen to onWindowSizeChange and adjust map so the footer is still in the view
 }
@@ -137,7 +134,8 @@ function initializeStations() {
   var query = 'SELECT * FROM ' + stationDataKey;
   query = encodeURIComponent(query);
 
-  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
+  var gvizQuery = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=' + query);
   gvizQuery.send(function(response) {
       
   var numRows = response.getDataTable().getNumberOfRows();
@@ -160,9 +158,10 @@ function initializeStations() {
         icon: 'assets/measle_brown.png'
       });
       
-      // Create attached infoWindow
+      // Create marker click listener
       google.maps.event.addListener(marker, 'click', function(event) {
             if (selectedMarker != null) {
+                showRoute(event.latLng);
                 // Create an info window and populate the directions info card
                 // TODO(clidwin): should info window on hover when doing directions
                 //createInfoWindow(event, true);
@@ -171,7 +170,22 @@ function initializeStations() {
                 // Create an info window and populate the station info card
                 createInfoWindow(event, false);
             }
-        });
+      });
+
+      // Create marker hover listener
+      google.maps.event.addListener(marker, 'mouseover', function(event) {
+        if (selectedMarker != null) {
+            createInfoWindow(event, true);
+        }
+      });
+
+      // Create marker un-hover listener
+      google.maps.event.addListener(marker, 'mouseout', function(event) {
+        if (selectedMarker != null) {
+            destInfoWindow.close();
+            destInfoWindow = null;
+        }
+      });
     }
   });
 }
@@ -185,11 +199,13 @@ function initializeStations() {
  */
 function createInfoWindow(event, forDirections) {
   // Construct Query
-  var query = 'SELECT * FROM ' + stationDataKey + ' where lat LIKE \'' + event.latLng.lat() + '\'';;
+  var query = 'SELECT * FROM ' + stationDataKey 
+        + ' where lat LIKE \'' + event.latLng.lat() + '\'';;
   query = encodeURIComponent(query);
 
   // Execute Query
-  var gvizQuery = new google.visualization.Query('http://www.google.com/fusiontables/gvizdata?tq=' + query);
+  var gvizQuery = new google.visualization.Query(
+      'http://www.google.com/fusiontables/gvizdata?tq=' + query);
   gvizQuery.send(function(response) {
     // Log errors if they occur
     if (response.isError()) {
@@ -234,11 +250,13 @@ function createInfoWindow(event, forDirections) {
         //TODO(clidwin): Clear the info-card data
         openedInfoWindow = null;
     });
-      
+
     infoWindow.open(map);
     openedInfoWindow = infoWindow;
-      
     
+    if (selectedMarker != null) {
+        destInfoWindow = infoWindow;
+    }
   });
 }
 
@@ -466,17 +484,29 @@ function updateDirections(row) {
 }
 
 /**
- *
+ * Displays a route between two two stations.
+ * https://stackoverflow.com/questions/6040965/
+ * 
+ * @param destLatLng The arrival station's latitude and longitude
  */
-function calculateAndDisplayRoute2(directionsService, directionsDisplay) {
+function showRoute(destLatLng) {
+  if (directionsDisplay != null) {
+      directionsDisplay.setMap(null);
+  }
     
-    console.log('Origin: (' + originLat + ', ' + originLong + ')');
-    console.log('Destination: (' + destLat + ', ' + destLong + ')');
-    //TODO(clidwin): Add all routes and use cycle marker to animate
-    //https://stackoverflow.com/questions/6040965/drawing-multiple-route-google-map
+  var directionsService = new google.maps.DirectionsService();
+    
+  var rendererOptions = {
+    preserveViewport: true,         
+    suppressMarkers:true,
+    routeIndex:1
+  };
+    
+  directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions); 
+  directionsDisplay.setMap(map);
   directionsService.route({
-    origin: new google.maps.LatLng(parseFloat(originLat), parseFloat(originLong)),
-    destination: new google.maps.LatLng(parseFloat(destLat), parseFloat(destLong)),
+    origin: originLatLng,
+    destination: destLatLng,
     travelMode: google.maps.TravelMode.BICYCLING
   }, function(response, status) {
     if (status == google.maps.DirectionsStatus.OK) {
