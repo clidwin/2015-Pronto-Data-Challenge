@@ -42,7 +42,7 @@ var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
 var DAY_OF_WEEK_NAMES = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.'];
 
 /**
- *
+ * Sets up the map interface and related details
  */
 function initMap() { 
   var rendererOptions = {
@@ -170,12 +170,20 @@ function initializeStations() {
             if (selectedOriginMarker != null) {
                 showRoute(event.latLng);
                 updateTripCard(event.latLng);
-                // Create an info window and populate the directions info card
-                // TODO(clidwin): should info window on 
-                //hover when doing directions
-                //createInfoWindow(event, true);
                 
+                // Set the trip-instructions element to be a link
+                document.getElementById('trip-instructions').textContent = '';
+                document.getElementById('trip-instructions').innerHTML = 
+                    '<a onclick="showStationInsteadOfDirections()" ' 
+                    + 'class="marker-link">' 
+                    + 'Return to Station View' + '</a>';
+
             } else {
+                // Set the trip-instructions element to be text
+                document.getElementById('trip-instructions').innerHTML = '';
+                document.getElementById('trip-instructions').textContent = 
+                    'Click a Pronto Station Destination';
+                
                 // Create an info window and populate the station info card
                 createInfoWindow(event, false);
             }
@@ -251,8 +259,8 @@ function createInfoWindow(event, forDirections) {
     infoWindow.setPosition(event.latLng);
     infoWindow.setContent(infoWindowContent);
     google.maps.event.addListener(infoWindow, 'closeclick', function() {
-        //TODO(clidwin): Clear the info-card data
         openedInfoWindow = null;
+        resetStationCard();
     });
 
     infoWindow.open(map);
@@ -271,8 +279,120 @@ function createInfoWindow(event, forDirections) {
  * @param lng The longitude piece of the selected marker's coordinate
  */
 function showStationInsteadOfDirections(lat, lng) {
-    //TODO(clidwin): Implement
-    alert('Station request acknowledged');
+    // Clear Trip Markers from the screen
+    selectedOriginMarker.setVisible(false);
+    selectedOriginMarker = null;
+    selectedDestMarker.setVisible(false);
+    selectedDestMarker = null;
+    
+    // Clear Route
+    directionsDisplay.setMap(null);
+    
+    // Reset Cards
+    resetStationCard();
+    resetTripCard();
+    
+    // Show Station Card
+    document.getElementById('info-card').style.display = 'block';
+    document.getElementById('trip-card').style.display = 'none';
+}
+
+/**
+ * TODO(clidwin): Implement a less-hacky solution for reseting the card content
+ */
+function resetStationCard() {
+    var cardHtml = '<h1 id="info-title">Station Details</h1>';
+    cardHtml += '<p id="station-card-name">Click a Pronto Station</p>';
+    cardHtml += '<div id="station-card-streetview"></div>';
+    cardHtml += '<h2 class="info-section-title">Basic Info</h2>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">First Online:</p>';
+    cardHtml += '<p id="station-card-online" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Terminal ID:</p>';
+    cardHtml += '<p id="station-card-id" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Total Bike Docks:</p>';
+    cardHtml += '<p id="station-card-docks" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="horizontal-rule"></div>';
+    cardHtml += '<h2 class="info-section-title">Visit Details (2014)</h2>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Average Outgoing Visit:</p>';
+    cardHtml += '<p id="station-card-visit-outgoing" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Average Incoming Visit:</p>';
+    cardHtml += '<p id="station-card-visit-incoming" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Total Arrivals:</p>';
+    cardHtml += '<p id="station-card-visit-arrivals" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Total Departures:</p>';
+    cardHtml += '<p id="station-card-visit-departures" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="horizontal-rule"></div>';
+    cardHtml += '<h2 class="info-section-title">Visits by Pass Type (2014)</h2>';
+    cardHtml += '<div id="station-card-graph"></div>';
+    
+    document.getElementById('info-card').innerHTML = '';
+    document.getElementById('info-card').innerHTML = cardHtml;
+}
+
+/**
+ * TODO(clidwin): Implement a less-hacky solution for reseting the card content
+ */
+function resetTripCard() {
+    var cardHtml = '<h1 id="trip-heading">Ride Details</h1>';
+    cardHtml += '<p id="trip-instructions">Click a Pronto Station Destination</p>';
+    cardHtml += '<div id="trip-elevation-graph"></div>';
+    cardHtml += '<h2 class="info-section-title">Basic Info</h2>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Origin:</p>';
+    cardHtml += '<p id="trip-origin" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Destination:</p>';
+    cardHtml += '<p id="trip-destination" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="horizontal-rule"></div>';
+    cardHtml += '<h2 class="info-section-title">Trip Details (2014)</h2>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Route Travel Time:</p>';
+    cardHtml += '<p id="travel-time-estimated" ';
+    cardHtml += 'class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Average Trip Time:</p>';
+    cardHtml += '<p id="travel-time-avg" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Total Trips:</p>';
+    cardHtml += '<p id="total-trips" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">Trips by Annual Passes:</p>';
+    cardHtml += '<p id="trips-annual" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    cardHtml += '<div class="station-card-datum">';
+    cardHtml += '<p class="station-card-datum-label">';
+    cardHtml += 'Trips by Short-Term Passes:';
+    cardHtml += '</p>';
+    cardHtml += '<p id="trips-short-term" class="station-card-datum-content"></p>';
+    cardHtml += '</div>';
+    
+    document.getElementById('trip-card').innerHTML = '';
+    document.getElementById('trip-card').innerHTML = cardHtml;
 }
 
 /**
@@ -291,6 +411,8 @@ function initializeDirections(lat, lng) {
         position: originLatLng,
         icon: 'assets/measle_turquoise.png'
     });
+    //TODO(clidwin): Figure out why resetting the visibility isn't working.
+    selectedOriginMarker.setVisible(true);
     google.maps.event.addListener(selectedOriginMarker, 'click', function(event) {
         //TODO(clidwin): Have a toast pop up indicating origin != destination
         console.log('origin clicked');
@@ -587,6 +709,13 @@ function showRoute(destLatLng) {
   if (directionsDisplay != null) {
       directionsDisplay.setMap(null);
   }
+    
+  selectedDestMarker = new google.maps.Marker({
+    map: map,
+    position: destLatLng,
+    icon: 'assets/measle_turquoise.png'
+  });
+  selectedDestMarker.setVisible(true);
     
   var directionsService = new google.maps.DirectionsService();
     

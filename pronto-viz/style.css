@@ -117,7 +117,7 @@ a:hover, .hyperlink {
 }
 
 .marker-link {
-    color: #003b49;
+    color: #6aa64c;
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
     text-align: center;
@@ -134,6 +134,7 @@ a:hover, .hyperlink {
     display: inline-block;
     font-family: 'Lato', sans-serif;
     font-weight: 300;
+    line-height: 1.6em;
 }
 
 .marker-label, .station-card-datum-label {
