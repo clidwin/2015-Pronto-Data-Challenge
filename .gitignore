@@ -2,7 +2,8 @@
 *.zip
 csv_src/
 
-# Excluding p5.js libraries, which can be found at http://p5js.org/
+# Excluding (unused) p5.js libraries, which can be found at http://p5js.org/
 pronto-viz/libraries/
 
+# Excluding API key and table ID (contributors/derivates should use their own)
 pronto-viz/keys.js
