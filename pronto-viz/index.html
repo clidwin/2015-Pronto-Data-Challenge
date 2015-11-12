@@ -6,11 +6,6 @@
 
     <title>Pronto Data Challenge 2015 | Christina Lidwin</title>
     
-    <!-- Base p5.js Libraries -->
-    <script src="libraries/p5.js" type="text/javascript"></script>
-    <script src="libraries/p5.dom.js" type="text/javascript"></script>
-    <script src="libraries/p5.sound.js" type="text/javascript"></script>
-    
     <!-- Google Maps Javascript API -->
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script src="https://maps.googleapis.com/maps/api/js"></script>
@@ -18,7 +13,7 @@
     <!-- Custom Javascript Classes -->
     <script src="keys.js" type="text/javascript"></script>
     <script src="map.js" type="text/javascript"></script>
-    <!-- <script src="sketch.js" type="text/javascript"></script> -->
+    <script src="description-windows.js" type="text/javascript"></script>
 
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
@@ -26,11 +21,14 @@
     <!-- TODO(clidwin): Responsive web navigation -->
     <header>
         <div id="header-content-wrapper">
-            <h1 id="site-title" class="text"><a href="">Cycle Stats</a></h1>
+            <h1 id="site-title" class="text"><a href="">Data in SEA Tool</a></h1>
             <div id="navigation">
-                <a href="//github.com/clidwin/2015-Pronto-Data-Challenge" class="text nav-item">Code</a>
-                <a href="" class="text nav-item">Usage</a>
-                <a href="" class="text nav-item">About</a>
+                <a href="//github.com/clidwin/2015-Pronto-Data-Challenge" 
+                   class="text nav-item" target="_blank">Code</a>
+                <a onclick="showUsageDescription()" 
+                   class="text nav-item">Usage</a>
+                <a onclick="showAboutDescription()" 
+                   class="text nav-item">About</a>
             </div>
         </div>
     </header>
@@ -125,6 +123,76 @@
                     Trips by Short-Term Passes:
                 </p>
                 <p id="trips-short-term" class="station-card-datum-content"></p>
+            </div>
+        </div>
+        <div id="about-desc" class="description">
+            <a onclick="hideAboutDescription()" 
+               class="close-desc">Close Description</a>
+            <h1 class="title-desc">About the Data in SEA Tool</h1>
+            <div class="desc-content">
+                <p class="desc-p"><b>Data in SEA Tool</b> is a map-based 
+                    interaction portal to explore information about Pronto 
+                    bicycles and how people use them to travel in the 
+                    Seattle area. Using publicly-available data from 2014, 
+                    this interface provides opportunities to visualize and
+                    understand station information, travel times, and 
+                    routes used by Pronto pass holders. Clicking on an
+                    individual station reveals information about the
+                    particular set of Pronto bike racks and a general
+                    sense of how people use the station. Alternatively,
+                    selecting a pair of stations reveals information about
+                    how Pronto riders travel throughout the city.
+                </p>
+                <p class="desc-p">In addition to providing a way
+                    to view Pronto's publicly available information, the
+                    development of this visualization focused on three
+                    goals. First, to acknowledge Pronto as the source for 
+                    and subject of this visualization, the map and 
+                    navigation color scheme mimics Pronto's branding. 
+                    Second, to make this solution something that other 
+                    people could build on and adopt with their own bike
+                    data and their own cities, this visualization's source
+                    code is available for <a class="link-desc" href="//github.com/clidwin/2015-Pronto-Data-Challenge">
+                    viewing and forking on Github</a>. Finally, to 
+                    emphasize the relationship between the data and how 
+                    it was collected, the map interface was created as 
+                    the central view and platform for interactions.
+                </p>
+            </div>
+        </div>
+        <div id="use-desc" class="description">
+            <a onclick="hideUsageDescription()" 
+               class="close-desc">Close Description</a>
+            <h1 class="title-desc">Using This Tool</h1>
+            <div class="desc-content">
+                <p class="desc-p">The majority of the interactions in this 
+                    tool occur on the map itself. To begin, simply click
+                    on one of the brown markers, which will reveal a
+                    the station's location and the total number of bike 
+                    racks at the station.
+                </p>
+                <p class="desc-p">In the window generated above a selected
+                    station, clicking on the "Pick Destination" link
+                    enables a trip mode. In this mode, selecting a second
+                    station will show information based on a route
+                    generated by traveling between the two stations.
+                <p class="desc-p">Once a station or trip is selected, the
+                    panel on the right side of the screen reveals 
+                    additional information about the station or trip, 
+                    including how Pronto riders use the station and
+                    geographic details provided by Google Maps.
+                </p>
+                <p class="desc-p">The panel on the right side also contains
+                    suggestions for interactions when nothing is selected.
+                    Just underneath the title of the panel is a phrase
+                    indicating to click a station when none is selected or
+                    enables returning to station mode when a trip has been
+                    set.
+                </p>
+                <p class="desc-p">Data in SEA Tool was developed for a
+                    desktop use case. A mobile user experience is coming 
+                    soon.
+                </p>
             </div>
         </div>
     </div>

@@ -147,6 +147,44 @@ a:hover, .hyperlink {
     margin-right: 4px;
 }
 
+/* Styling affiliated with the description windows */
+.description {
+    position: absolute;
+    top: 20px;
+    left: calc(50% - 350px);
+    
+    background: #ffffff;
+    border-radius: 2px;
+    height: 520px;
+    padding: 12px;
+    width: 700px;
+}
+
+.close-desc {
+    float: right;
+    color: rgba(0, 59, 73, 0.5);
+}
+
+.title-desc {
+    clear: both;
+    margin-top: 48px;
+    text-align: center;
+}
+
+.desc-content {
+    line-height: 1.6em;
+    margin: 16px auto;
+    width: 88%;
+}
+
+.desc-p {
+    margin-bottom: 0.8em;
+}
+
+.link-desc {
+    color: #6aa64c;
+}
+
 /* Ids (Listed Alphabetically) */
 #content {
     position: relative;

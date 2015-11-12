@@ -45,6 +45,9 @@ var DAY_OF_WEEK_NAMES = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.
  * Sets up the map interface and related details
  */
 function initMap() { 
+  // Hide the description displays
+  hideAllDescriptions();
+    
   var rendererOptions = {
       map: map,
       preserveViewport: true,
