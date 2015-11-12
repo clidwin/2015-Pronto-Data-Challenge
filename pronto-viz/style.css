@@ -231,7 +231,7 @@ a:hover, .hyperlink {
     width: auto;
 }
 
-#station-card-streetview {
+#station-card-streetview, #trip-elevation-graph {
     background-color: #cccccc;
     height: 250px;
     margin-bottom: 18px;

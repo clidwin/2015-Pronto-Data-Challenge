@@ -9,9 +9,7 @@ var originLatLng;
 
 var destInfoWindow;
 
-var apiKey = 'AIzaSyC3cxT2wWKyrWIzITqYwR7PyfhO7UD9yBI';
-var tripDataKey = '14RtXJ3vHUKxGiAom_mz8W4MpzJu1p5ga0_H_a82G';
-var stationDataKey = '12mjOjVktZlJ6dTsFEC3_OVJYWCizYdE4o5XGQpPo';
+var elevator;
 
 // Coordinate components for directions between two stations
 var originLat, originLong, destLat, destLong;
@@ -32,7 +30,9 @@ var selectedDestMarker = null;
 var directionsDisplay;
 
 google.setOnLoadCallback(initMap);
-google.load('visualization', '1', { 'packages':['corechart', 'table', 'geomap'] });
+google.load('visualization', '1', { 
+    'packages':['corechart', 'table', 'geomap', 'columnchart'] 
+});
 
 // From https://stackoverflow.com/questions/1643320/
 var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -456,7 +456,7 @@ function calculateTotalTrips(originTerminal, destinationTerminal) {
       
     document.getElementById('total-trips').textContent = totalTrips;
     document.getElementById('travel-time-avg').textContent = 
-        averageTripTime + ' minutes';
+        averageTripTime + ' mins';
   });
 }
 
@@ -484,8 +484,8 @@ function queryAndDisplayTripsByPass(
       passQuery += ' AND usertype LIKE \'Short-Term Pass Holder\'';
       elementId = 'trips-short-term';
   }
-
   passQuery = encodeURIComponent(passQuery);
+        
   var passGvizQuery = new google.visualization.Query(
       'http://www.google.com/fusiontables/gvizdata?tq=' + passQuery);
   passGvizQuery.send(function(response) {
@@ -495,7 +495,7 @@ function queryAndDisplayTripsByPass(
         return;
     }
     
-    document.getElementById(elementId).textContent = 
+    document.getElementById(elementId).textContent =
         response.getDataTable().getValue(0,0);
   });
 }
@@ -534,7 +534,7 @@ function queryAndDisplayDuration(stationId, domElementId, isArrivalQuery) {
     var total = response.getDataTable().getValue(0, 0);
     var count = response.getDataTable().getValue(0, 1);
     var average = Math.round((total/count)/60);
-    document.getElementById(domElementId).textContent = average + ' minutes'; 
+    document.getElementById(domElementId).textContent = average + ' mins'; 
   });
 }
 
@@ -608,6 +608,69 @@ function showRoute(destLatLng) {
     } else {
       window.alert('Directions request failed due to ' + status);
     }
-    //TODO(clidwin): Show the estimated route time and draw elevation graph
+    
+    // Display the estimated route travel time
+    var travelTime = directionsDisplay.directions
+            .routes[0].legs[0].duration.text;
+    document.getElementById('travel-time-estimated').textContent = travelTime;
+      
+    // Display elevation graph
+    displayElevationGraph(directionsDisplay.directions.routes[0].legs[0].steps);
+  });
+}
+
+/**
+ * Calculate the path for elevation and draw a chart showing elevation
+ * variations in the UI.
+ *
+ * @param route The trip to display
+ */
+function displayElevationGraph(route) {
+  elevator = new google.maps.ElevationService;
+    
+  var path = [];
+  for (var i=0; i < route.length; i++) {
+      path.push.apply(path, route[i].path);
+  }
+    
+  // Create a PathElevationRequest object using this array.
+  // Ask for 256 samples along that path.
+  // Initiate the path request.
+  elevator.getElevationAlongPath({
+    'path': path,
+    'samples': 128
+  }, plotElevation);
+}
+
+// Takes an array of ElevationResult objects, draws the path on the map
+// and plots the elevation profile on a Visualization API ColumnChart.
+// Source: https://developers.google.com/maps/documentation/
+//          javascript/examples/elevation-paths
+function plotElevation(elevations, status) {
+  var chartDiv = document.getElementById('trip-elevation-graph');
+  if (status !== google.maps.ElevationStatus.OK) {
+    // Show the error code inside the chartDiv.
+    chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
+        status;
+    return;
+  }
+  // Create the chart element in the pre-assigned div.
+  var chart = new google.visualization.ColumnChart(chartDiv);
+
+  // Convert the data into a chart-readable format.
+  var data = new google.visualization.DataTable();
+  data.addColumn('string', 'Sample');
+  data.addColumn('number', 'Elevation');
+  for (var i = 0; i < elevations.length; i++) {
+    data.addRow(['', elevations[i].elevation]);
+  }
+
+  // Draw the chart in its pre-assigned DOM element.
+  chart.draw(data, {
+    colors: ['#8EDD65'],
+    height: 250,
+    legend: 'none',
+    titleX: 'Position Along Route (%)',
+    titleY: 'Elevation (m)'
   });
 }
