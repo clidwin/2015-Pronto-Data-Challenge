@@ -713,12 +713,13 @@ function showRoute(destLatLng) {
       directionsDisplay.setMap(null);
   }
     
-  selectedDestMarker = new google.maps.Marker({
+  //TODO(clidwin): Uncomment and figure out why these markers are persisting
+  /*selectedDestMarker = new google.maps.Marker({
     map: map,
     position: destLatLng,
     icon: 'assets/measle_turquoise.png'
   });
-  selectedDestMarker.setVisible(true);
+  selectedDestMarker.setVisible(true);*/
     
   var directionsService = new google.maps.DirectionsService();
     
